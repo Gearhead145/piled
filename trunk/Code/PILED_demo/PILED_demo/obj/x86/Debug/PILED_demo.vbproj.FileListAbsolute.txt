@@ -1,0 +1,11 @@
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\bin\Debug\PILED_demo.exe
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\bin\Debug\PILED_demo.pdb
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\bin\Debug\PILED_demo.xml
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.Form1.resources
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.Resources.resources
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.exe
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.xml
+C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.pdb
