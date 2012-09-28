@@ -1,0 +1,288 @@
+******************************************************************************
+                  MSP430 Linker PC v4.1.1                      
+******************************************************************************
+>> Linked Tue Sep 04 14:13:43 2012
+
+OUTPUT FILE NAME:   <RGB_Tile.out>
+ENTRY POINT SYMBOL: "_c_int00"  address: 00000bbc
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  MEM                   00000200   0000fdfd  00000af8  0000f305  RWIX
+  RESET                 0000fffe   0000ffff  00000002  0000fffd  RWIX
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.cinit     0    00000200    00000000     UNINITIALIZED
+
+.pinit     0    00000200    00000000     UNINITIALIZED
+
+.text      0    00000200    00000a2a     
+                  00000200    0000036a     main.obj (.text:main)
+                  0000056a    00000194     main.obj (.text:target_rgb)
+                  000006fe    00000130     rts430.lib : fs_add.obj (.text)
+                  0000082e    000000c2                : fs_mpy.obj (.text)
+                  000008f0    0000009a                : fs_div.obj (.text)
+                  0000098a    00000066     main.obj (.text:set_rgb)
+                  000009f0    00000058     rts430.lib : div32u.obj (.text)
+                  00000a48    0000004a                : fs_cmp.obj (.text)
+                  00000a92    00000046                : fs_tou.obj (.text)
+                  00000ad8    00000036                : fs_itof.obj (.text)
+                  00000b0e    00000032                : fs_ultof.obj (.text)
+                  00000b40    0000002c     main.obj (.text:_Single_Measure)
+                  00000b6c    0000002c     rts430.lib : div16s.obj (.text)
+                  00000b98    00000024                : fs_utof.obj (.text)
+                  00000bbc    0000001e                : boot.obj (.text:_c_int00_noinit_noexit)
+                  00000bda    00000016                : div16u.obj (.text)
+                  00000bf0    00000014     main.obj (.text:Port_1)
+                  00000c04    00000010     rts430.lib : epilog.obj (.text)
+                  00000c14    0000000c     main.obj (.text:ADC10_ISR)
+                  00000c20    00000004     rts430.lib : pre_init.obj (.text:_system_pre_init)
+                  00000c24    00000004                : exit.obj (.text:abort)
+                  00000c28    00000002                : _lock.obj (.text:_nop)
+
+.data      0    00000200    00000000     UNINITIALIZED
+
+.bss       0    00000c2a    0000007a     UNINITIALIZED
+                  00000c2a    00000071     main.obj (.bss)
+                  00000c9b    00000001     --HOLE--
+                  00000c9c    00000004     rts430.lib : _lock.obj (.bss)
+                  00000ca0    00000004                : boot.obj (.bss)
+
+.stack     0    00000ca4    00000050     UNINITIALIZED
+                  00000ca4    00000002     rts430.lib : boot.obj (.stack)
+                  00000ca6    0000004e     --HOLE--
+
+.int02     0    00000cf4    00000002     
+                  00000cf4    00000002     <whole-program> (.int02)
+
+.int05     0    00000cf6    00000002     
+                  00000cf6    00000002     <whole-program> (.int05)
+
+.reset     0    0000fffe    00000002     
+                  0000fffe    00000002     rts430.lib : boot.obj (.reset)
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address    name
+--------   ----
+00000c2a   .bss
+00000200   .data
+00000200   .text
+UNDEFED    ADC10CTL0
+UNDEFED    ADC10CTL1
+UNDEFED    ADC10MEM
+00000c14   ADC10_ISR
+00000c2a   ADCDone
+00000c2c   ADCValue
+UNDEFED    BCSCTL1
+00000c24   C$$EXIT
+UNDEFED    CALBC1_8MHZ
+UNDEFED    CALDCO_8MHZ
+UNDEFED    DCOCTL
+UNDEFED    P1DIR
+UNDEFED    P1IE
+UNDEFED    P1IFG
+UNDEFED    P1OUT
+UNDEFED    P1REN
+UNDEFED    P1SEL
+UNDEFED    P2DIR
+UNDEFED    P2SEL
+00000bf0   Port_1
+UNDEFED    TA0CCR0
+UNDEFED    TA0CCR1
+UNDEFED    TA0CCR2
+UNDEFED    TA0CCTL1
+UNDEFED    TA0CCTL2
+UNDEFED    TA0CTL
+UNDEFED    TA1CCR0
+UNDEFED    TA1CCR1
+UNDEFED    TA1CCR2
+UNDEFED    TA1CCTL1
+UNDEFED    TA1CCTL2
+UNDEFED    TA1CTL
+UNDEFED    WDTCTL
+00000b40   _Single_Measure
+00000cf4   __STACK_END
+00000050   __STACK_SIZE
+00000001   __TI_args_main
+00000001   __TI_auto_init
+00000001   __TI_exit
+ffffffff   __binit__
+00000c2a   __bss__
+ffffffff   __c_args__
+ffffffff   __cinit__
+00000200   __data__
+00000b6c   __divi
+00000bda   __divu
+000009f0   __divul
+00000200   __edata__
+00000ca4   __end__
+00000c2a   __etext__
+00000704   __fs_add
+00000a48   __fs_cmp
+000008f0   __fs_div
+00000ad8   __fs_itof
+0000082e   __fs_mpy
+000006fe   __fs_sub
+00000a92   __fs_tou
+00000b0e   __fs_ultof
+00000b98   __fs_utof
+ffffffff   __pinit__
+00000b6c   __remi
+00000bda   __remu
+000009f0   __remul
+00000200   __text__
+00000c30   _b
+00000bbc   _c_int00
+00000bbc   _c_int00_noinit_noexit
+00000ca0   _cleanup_ptr
+00000ca2   _dtors_ptr
+00000c2f   _g
+00000c9c   _lock
+00000c28   _nop
+00000c2e   _r
+0000fffe   _reset_vector
+00000ca4   _stack
+00000c20   _system_pre_init
+00000c9e   _unlock
+00000c24   abort
+00000c36   average
+ffffffff   binit
+ffffffff   cinit
+00000c9a   counter
+00000200   edata
+00000ca4   end
+00000c2a   etext
+00000c10   func_epilog_1
+00000c0e   func_epilog_2
+00000c0c   func_epilog_3
+00000c0a   func_epilog_4
+00000c08   func_epilog_5
+00000c06   func_epilog_6
+00000c04   func_epilog_7
+00000200   main
+00000c34   mode
+ffffffff   pinit
+00000c35   rt
+0000098a   set_rgb
+0000056a   target_rgb
+00000c32   tempe
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address    name
+--------   ----
+00000001   __TI_args_main
+00000001   __TI_auto_init
+00000001   __TI_exit
+00000050   __STACK_SIZE
+00000200   .data
+00000200   .text
+00000200   __data__
+00000200   __edata__
+00000200   __text__
+00000200   edata
+00000200   main
+0000056a   target_rgb
+000006fe   __fs_sub
+00000704   __fs_add
+0000082e   __fs_mpy
+000008f0   __fs_div
+0000098a   set_rgb
+000009f0   __divul
+000009f0   __remul
+00000a48   __fs_cmp
+00000a92   __fs_tou
+00000ad8   __fs_itof
+00000b0e   __fs_ultof
+00000b40   _Single_Measure
+00000b6c   __divi
+00000b6c   __remi
+00000b98   __fs_utof
+00000bbc   _c_int00
+00000bbc   _c_int00_noinit_noexit
+00000bda   __divu
+00000bda   __remu
+00000bf0   Port_1
+00000c04   func_epilog_7
+00000c06   func_epilog_6
+00000c08   func_epilog_5
+00000c0a   func_epilog_4
+00000c0c   func_epilog_3
+00000c0e   func_epilog_2
+00000c10   func_epilog_1
+00000c14   ADC10_ISR
+00000c20   _system_pre_init
+00000c24   C$$EXIT
+00000c24   abort
+00000c28   _nop
+00000c2a   .bss
+00000c2a   ADCDone
+00000c2a   __bss__
+00000c2a   __etext__
+00000c2a   etext
+00000c2c   ADCValue
+00000c2e   _r
+00000c2f   _g
+00000c30   _b
+00000c32   tempe
+00000c34   mode
+00000c35   rt
+00000c36   average
+00000c9a   counter
+00000c9c   _lock
+00000c9e   _unlock
+00000ca0   _cleanup_ptr
+00000ca2   _dtors_ptr
+00000ca4   __end__
+00000ca4   _stack
+00000ca4   end
+00000cf4   __STACK_END
+0000fffe   _reset_vector
+ffffffff   __binit__
+ffffffff   __c_args__
+ffffffff   __cinit__
+ffffffff   __pinit__
+ffffffff   binit
+ffffffff   cinit
+ffffffff   pinit
+UNDEFED    ADC10CTL0
+UNDEFED    ADC10CTL1
+UNDEFED    ADC10MEM
+UNDEFED    BCSCTL1
+UNDEFED    CALBC1_8MHZ
+UNDEFED    CALDCO_8MHZ
+UNDEFED    DCOCTL
+UNDEFED    P1DIR
+UNDEFED    P1IE
+UNDEFED    P1IFG
+UNDEFED    P1OUT
+UNDEFED    P1REN
+UNDEFED    P1SEL
+UNDEFED    P2DIR
+UNDEFED    P2SEL
+UNDEFED    TA0CCR0
+UNDEFED    TA0CCR1
+UNDEFED    TA0CCR2
+UNDEFED    TA0CCTL1
+UNDEFED    TA0CCTL2
+UNDEFED    TA0CTL
+UNDEFED    TA1CCR0
+UNDEFED    TA1CCR1
+UNDEFED    TA1CCR2
+UNDEFED    TA1CCTL1
+UNDEFED    TA1CCTL2
+UNDEFED    TA1CTL
+UNDEFED    WDTCTL
+
+[102 symbols]
