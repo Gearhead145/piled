@@ -1,4 +1,4 @@
-#include <C:/test.h> //Include VITAL RGB TILE FUNCTIONS!
+#include "test.h" //Include VITAL RGB TILE FUNCTIONS!
 unsigned char mode; //Global mode variable allows board to save/switch between different operating modes.
 
 //Settings for strobe
@@ -8,30 +8,12 @@ char s_r = 255;
 char s_g = 255;
 char s_b = 255;
 
+//setting for sound activated colors
+char ccolor = 0;
 
-void status(){
-  Serial.println("Status:");
-}
-void help(){
-  Serial.println("Serial command shell v1.2");
-  Serial.println("Copyright (c) 2012 Jorel Lalicki");
-  Serial.println("Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:");
-Serial.println("   • Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.");
-Serial.println("   • Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.");
-Serial.println("THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ""AS IS"" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.");
-Serial.println("\n\nCommand Reference: [* not yet fully implemented; ~ not yet implemented]\n");
-Serial.println("help(); Displays the liscense and provides a command reference");
-Serial.println("rcos(); Standard flash memory wasting function.");
-Serial.println("reboot(); Resets variables to their initial values, and clears the bluetooth communication buffer");
-Serial.println("set_rgb(char r, char g, char b); Instantly updates the PILED output color");
-Serial.println("target_rgb(char r, char g, char b, unsigned int fade time); Fades smoothly into the specified color over the specified fade time\n");
+//setting for clap activated white light
+boolean clapper = 0;
 
-Serial.println("* status(); Displays status information, such as ambient sound level, input voltage, settings for the strobe and rgb fade effects, etc");
-Serial.println("* strobe(int frequency off, int frequency on, char r, char g, char b); Strobe with variable color, frequency, and duty cycle\n");
-
-Serial.println("~rgb_fade(int time per primary color); A smooth rainbow fade with the option to change speed");
-Serial.println("~audio_color(int sensitivity, int change speed); A classy effect that changes color with loud sounds, cycling from red to green to blue ");
-}
 
 void _set_rgb(char command[128], char command_length, char base_length){
   //parse out the individual strings
@@ -65,6 +47,8 @@ void _set_rgb(char command[128], char command_length, char base_length){
   }
   set_rgb(r,g,b);
 }
+
+
 void _target_rgb(char command[128], char command_length, char base_length){
     //parse out the individual strings
   char temp_num[11]; //10 chars, plus a null character to terminate it as a string for atoi()
@@ -110,12 +94,28 @@ void _target_rgb(char command[128], char command_length, char base_length){
 }
 
 void reboot(){
+  Serial.println("Rebooting...");
   setup();
 }
+
+
  void invalid_input(){
    Serial.println("Error in input command. Type ""help();"" for available commands."); 
  }
 
+void establishContact() {
+  Serial.println(" _______  ___   ___      _______  ______"); 
+  Serial.println("|       ||   | |   |    |       ||      |");
+  Serial.println("|    _  ||   | |   |    |    ___||  _    |");
+  Serial.println("|   |_| ||   | |   |    |   |___ | | |   |");
+  Serial.println("|    ___||   | |   |___ |    ___|| |_|   |");
+  Serial.println("|   |    |   | |       ||   |___ |       |");
+  Serial.println("|___|    |___| |_______||_______||______|");
+  Serial.println("\nSerial command shell v1.2");
+  Serial.println("Copyright 2012 Jorel Lalicki");
+  Serial.println("__________________________________________\n\n");
+  Serial.print('>');
+}
 
 
 
@@ -141,53 +141,84 @@ void setup()
 	TA1CCR0 = period; //period timer 1
 	CCR1 = 0;         // R
 	CCR2 = 0;         // G
-        mode = 0;
-        establishContact();  // send the fun initialization data OUT; and wait for a keypress
+        mode = 1;
+        establishContact();  // send the fun initialization data OUT
         
       
 }
 
-void rcos(){
-  //I might be an easter egg.... 
-  Serial.println("          _____                    _____                   _______                   _____");          
-  Serial.println("         /\\    \\                  /\\    \\                 /::\\    \\                 /\\    \\ ");         
-  Serial.println("        /::\\    \\                /::\\    \\               /::::\\    \\               /::\\    \\ ");       
-  Serial.println("       /::::\\    \\              /::::\\    \\             /::::::\\    \\             /::::\\    \\ ");       
-  Serial.println("      /::::::\\    \\            /::::::\\    \\           /::::::::\\    \\           /::::::\\    \\ ");     
-  Serial.println("     /:::/\\:::\\    \\          /:::/\\:::\\    \\         /:::/~~\\:::\\    \\         /:::/\\:::\\    \\ ");     
-  Serial.println("    /:::/__\\:::\\    \\        /:::/  \\:::\\    \\       /:::/    \\:::\\    \\       /:::/__\\:::\\    \\ ");    
-  Serial.println("   /::::\\   \\:::\\    \\      /:::/    \\:::\\    \\     /:::/    / \\:::\\    \\      \\:::\\   \\:::\\    \\ ");   
-  Serial.println("  /::::::\\   \\:::\\    \\    /:::/    / \\:::\\    \\   /:::/____/   \\:::\\____\\   ___\\:::\\   \\:::\\    \\ ");  
-  Serial.println(" /:::/\\:::\\   \\:::\\____\\  /:::/    /   \\:::\\    \\ |:::|    |     |:::|    | /\\   \\:::\\   \\:::\\    \\ "); 
-  Serial.println("/:::/  \\:::\\   \\:::|    |/:::/____/     \\:::\\____\\|:::|____|     |:::|    |/::\\   \\:::\\   \\:::\\____\\ ");
-  Serial.println("\\::/   |::::\\  /:::|____|\\:::\\    \\      \\::/    / \\:::\\    \\   /:::/    / \\:::\\   \\:::\\   \\::/    /");
-  Serial.println(" \\/____|:::::\\/:::/    /  \\:::\\    \\      \\/____/   \\:::\\    \\ /:::/    /   \\:::\\   \\:::\\   \\/____/"); 
-  Serial.println("       |:::::::::/    /    \\:::\\    \\                \\:::\\    /:::/    /     \\:::\\   \\:::\\    \\ ");     
-  Serial.println("       |::|\\::::/    /      \\:::\\    \\                \\:::\\__/:::/    /       \\:::\\   \\:::\\____\\ ");    
-  Serial.println("       |::| \\::/____/        \\:::\\    \\                \\::::::::/    /         \\:::\\  /:::/    /");    
-  Serial.println("       |::|  ~|               \\:::\\    \\                \\::::::/    /           \\:::\\/:::/    /");     
-  Serial.println("       |::|   |                \\:::\\    \\                \\::::/    /             \\::::::/    /");      
-  Serial.println("       \\::|   |                 \\:::\\____\\                \\::/____/               \\::::/    /");       
-  Serial.println("        \\:|   |                  \\::/    /                 ~~                      \\::/    /");        
-  Serial.println("         \\|___|                   \\/____/                                           \\/____/");                                                                                                           
-}
-
-
-
-void effects_loop(){
+void loop()
+{
+  //Variables for serial parsing
+char command[32]; //command buffer
+int command_length = 0; //length of command (ending with a ;)
+char command_temp = 0;
+int base_length = 0;
+  //Check mode, and do mode-specific stuff\
   
+  while (1){
+    
   int i;
-  while (Serial.available() == 0) //Loop until some serial data is recieved.
- // Serial.println("effective!");
   {
     switch (mode){
-          case 0: // Direct bluetooth command mode. Do nothing - just wait for commands
-          {
-            //Serial.println("zero");
+          case 0:{ // Direct bluetooth command mode. Do nothing - just wait for commands
+            int gain = analogRead(F1)/16+1; //set the gain from the R potentiometer - range 1-63
+            Serial.println(gain);
             break;
           }
-  	  case 4://strobe - with variable frequency, duty cycle, and color
-  	{
+          case 1:
+            set_rgb(analogRead(F1)/4, analogRead(F2)/4, analogRead(F3)/4);
+            break;
+          case 2: //the Clapper (named after Zach Clapper, creator of the first PILED Android app)
+            {
+              int threshold = analogRead(F2); //set the threshold from the F1 potentiometer. This is the level against which the mic signal is compared to detect transients
+            int temp = analogRead(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
+      
+      	    if (temp>threshold){ //if level is over threshold, it's a beat!
+             //Clap on, clap off...
+             if (clapper) {
+               target_rgb((char)0,(char)0,(char)0,(unsigned int)200.);
+             }
+             else{
+               target_rgb((char)255,(char)255,(char)255,(unsigned int)200);
+             }
+            }
+            break;
+            }
+          case 3:{
+            int gain = analogRead(F2)/16+1; //set the gain from the F2 potentiometer - range 1-64
+            int ambient = analogRead(F1); //Set the ambient level from the F1 potentiometer. This level is subtracted from the mic signal to give better dynamic range
+            int threshold = analogRead(F3);//set the threshold from the F3 potentiometer. This is the level against which the adjusted signal is compared for beat detection
+            int temp = analogRead(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
+            temp -= ambient;
+            if (temp <0) temp = 0;
+	    temp*=gain; //multiply the level by gain to get closer to the full LED brightness range
+            Serial.println(gain);
+            Serial.println(threshold);
+            Serial.println(temp);
+            Serial.println("------------");
+      	    if (temp>threshold){ //if level is over threshold, it's a beat!
+               if (ccolor == 2){
+                 target_rgb((char)255,(char)0,(char)0,(unsigned int)10);
+                 ccolor++;
+               }              
+               else if (ccolor == 1){
+                 target_rgb((char)0,(char)255,(char)0,(unsigned int)10);
+                 ccolor++;
+               }
+               else{
+                  target_rgb((char)0,(char)0,(char)255,(unsigned int)10);
+                  ccolor = 1;
+               }
+            }
+            break;
+          }
+          case 4: //Color temperature fader F1
+          
+            break;
+  	  case 5:
+           {
+            //strobe - with variable frequency, duty cycle, and color
 			for(i = 0; i < freq; ++i){
 				sleep(1000);//this is your frequency...
 		        }
@@ -198,127 +229,98 @@ void effects_loop(){
 		  	}
 		        set_rgb(0,0,0);
                         break;
-		 
-        }
+           }
+                
     }
   }
-}
-
-void strobe(char command[128], char command_length, char base_length){
- // Serial.println(command_length);
-    //parse out the individual strings
-  char temp_num[7]; //6 chars, plus a null character to terminate it as a string for atoi()
-  char color = 4; //starts reading at the 4th argument
-  char pos;
-  char temp = command_length - 3; //we want an index of the leftmost data value (not ")" or ";" )
-  while ( temp > base_length){
-     temp_num[0] = '0';//clear the buffer for a single color
-     temp_num[1] = '0';
-     temp_num[2] = '0';
-     temp_num[3] = '0';
-     temp_num[4] = '0';
-     temp_num[5] = '0';
-     temp_num[6] = 0; //null character termination
-     pos = 5;
-    while (command[temp] != ',' && command[temp] != '('){ //parse out separate colors
-        temp_num[pos] = command[temp]; //data? I hope so!
-        temp--;
-        pos--;
-        if (pos<-1) { //You forgot a comma, or put WAY too many digits...
-           invalid_input();
-           return;
-        }
-    }
-    temp--;
-
-    //the temp_num array should now contain a 3 digit padded null terminated ascii representation of a number
-    if (color == 4) s_b = atoi(temp_num);
-    if (color == 3) s_g = atoi(temp_num);
-    if (color == 2) s_r = atoi(temp_num);
-    if (color == 1) duty = atoi(temp_num);
-    if (color == 0) freq = atoi(temp_num);
-    color--; //now read in the next color   
-  }
-  mode = 4; //set the mode to STROBE MODE
- // Serial.println("strobe data set");  
-}
-
-
-
-
-void loop()
-{
-    Serial.write('>');
-    effects_loop(); //Go to the effects/mode loop, and stay there until new serial data is recieved.
-    char command[128]; //command buffer
-    int command_length = 0; //length of command (ending with a ;)
-    char command_temp = 0;
-    int base_length = 0;
-    
-    while (command_temp != ';'){
-      while (Serial.available() < 1){} //Wait for a full 4 bytes of command instruction
-      command_temp = Serial.read();
-      if (command_temp == ' ' || command_temp <= 31  ){
+  
+  
+  
+  //check for serial stuff... Max length is 32 chars
+  
+    if (Serial.available() != 0){ //if there is a character in the serial buffer, check it!
+      while (command_temp != ';'){
+        command_temp = Serial.read();
+        if (command_temp == ' ' || command_temp <= 31 || command_temp == '/r' || command_temp == '/n' ){
           //character is spacing/formatting, and should be ignored. Do nothing.
-      }
-      else { //character is valid, and should be treated as such...
-      
-        command[command_length] = command_temp;
+        }
+        else { //character is valid, and should be treated as such...
+          command[command_length] = command_temp;
           ++command_length; //update the recorded length of the command so far
-        if (command_temp == '('){
-          //This is the end of the base command, and the start of arguments
-          base_length = command_length - 1;
+          if (command_temp == '('){
+            //This is the end of the base command, and the start of arguments
+            base_length = command_length - 1;
+          }
         }
       }
-    }
-
-  //read in two more lines, just for the lulz. Also, so that the strobe works (or else the LF/CR would trigger a "new command".
-  while (Serial.available() < 2){}
-  if (Serial.read() != '\r' &&  Serial.read() != '\n') Serial.println("Please use CR+LF terminated lines");
-  //Now check which commands were requested! status, help, set_rgb, target_rgb, rcos, reboot, strobe
+      if (command_temp == ';'){
+        //We have a new command (perhaps!)
+        //Now check which commands were requested! status, help, set_rgb, target_rgb, rcos, reboot, strobe
     
-   //Serial.println(command); //debugging output
+         //Serial.println(command); //debugging output
     
-   if (!memcmp("status",command,6)){
-        status();
-    }
-   else if (!memcmp("help",command,4)){
-       help();
-    }
-    else if (!memcmp("target_rgb",command,10)){
-      mode = 0;
-       _target_rgb(command, command_length, base_length);
-    }
-   else if (!memcmp("rcos",command,4)){
-     rcos();
+          if (!memcmp("target_rgb",command,10)){
+            mode = 0;
+             _target_rgb(command, command_length, base_length);
+             //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("set_rgb",command,7)){
+            mode = 0;
+            _set_rgb(command, command_length, base_length);
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("rgbmix",command,6)){
+            mode = 1; //set the mode to manual RGB faders
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("clapper",command,7)){
+            mode = 2; //set the mode to clap activated
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          
+          else if (!memcmp("sound",command,5)){
+            mode = 3; //set the mode to sound activated
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("reboot",command,6)){
+              reboot();
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+          }   
+          else {
+            invalid_input();
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }                  
+      }    
     }  
-    else if (!memcmp("set_rgb",command,7)){
-      mode = 0;
-      _set_rgb(command, command_length, base_length);
-    }
-    else if (!memcmp("reboot",command,6)){
-        reboot();
-    }   
-    else if (!memcmp("strobe",command,6)){
-        strobe(command, command_length, base_length);
-    }
-    else {
-      invalid_input();
-    }
+  }
 }
 
 
-void establishContact() {
-  Serial.println(" _______  ___   ___      _______  ______"); 
-  Serial.println("|       ||   | |   |    |       ||      |");
-  Serial.println("|    _  ||   | |   |    |    ___||  _    |");
-  Serial.println("|   |_| ||   | |   |    |   |___ | | |   |");
-  Serial.println("|    ___||   | |   |___ |    ___|| |_|   |");
-  Serial.println("|   |    |   | |       ||   |___ |       |");
-  Serial.println("|___|    |___| |_______||_______||______|");
-  Serial.println("\nSerial command shell v1.2");
-  Serial.println("Copyright 2012 Jorel Lalicki");
-  Serial.println("__________________________________________\n\n");
-}
 
 
