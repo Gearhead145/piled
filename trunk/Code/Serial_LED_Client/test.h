@@ -5,10 +5,10 @@
 #define period 4095 //period for PWM output
 
 //Defines the on-board devices
-#define F1 INCH_7
-#define F2 INCH_5
-#define F3 INCH_4
-#define MIC INCH_0
+#define F1 A7
+#define F2 A5
+#define F3 A4
+#define MIC A0
 #define S1 BIT3 //Port 1
 #define S2 BIT0 //Port 2
 #define R BIT0 //Port 1
@@ -189,14 +189,14 @@ int rval(void){
 	return _r;
 }
 
-
-/*** ADC interrupt routine. Pulls CPU out of sleep mode for the main loop.**/
-#pragma vector=ADC10_VECTOR
-__interrupt void ADC10_ISR (void)
-{
-	ADCValue = ADC10MEM;				// Saves measured value.
-	ADCDone = 1;  					// Sets flag for main loop.
-}
+//
+///*** ADC interrupt routine. Pulls CPU out of sleep mode for the main loop.**/
+//#pragma vector=ADC10_VECTOR
+//__interrupt void ADC10_ISR (void)
+//{
+//	ADCValue = ADC10MEM;				// Saves measured value.
+//	ADCDone = 1;  					// Sets flag for main loop.
+//}
 
 
 
