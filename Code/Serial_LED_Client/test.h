@@ -2,7 +2,7 @@
 
 #ifndef LED_TILE_H_
 #define LED_TILE_H_
-#define period 4095 //period for PWM output
+#define period 1023 //period - 1 for PWM output
 
 //Defines the on-board devices
 #define F1 A7
@@ -24,6 +24,14 @@ unsigned char _g;
 unsigned char _b;
 
 
+//CCR values for use with 'mangler'
+int r_ccr = 0;
+int g_ccr = 0;
+int b_ccr = 0;
+
+//Array of 'pseudorandom' values to mangle output registers with to reduce resonances of drive electronics
+signed int mangler[] = {-317,167,-13,317,-167,13};
+char rand_index = 0; //index of current mangler value (changed every 8ms)
 
 int test(void);
 void binit(void);
@@ -55,11 +63,25 @@ void sleep(int cycles){ //wastes cpu cycles in increments of 100 cycles, for sof
 
 void binit(void){
 	//set operating frequency to 16MHz
-	DCOCTL = CALDCO_8MHZ;
-	BCSCTL1 = CALBC1_8MHZ;
+	DCOCTL = CALDCO_16MHZ;
+	BCSCTL1 = CALBC1_16MHZ;
 
 	//sets up the timer and sets ports to outputs/inputs
-	WDTCTL = WDTPW + WDTHOLD;             // Stop watchdog timer
+
+
+	//WDTCTL = WDTPW + WDTHOLD;             // Stop watchdog timer.
+
+
+        //Set up watchdog timer to introduce random noise to the CCR registers
+        WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTIS0; //Set up watchdog timer for an interrupt every 8ms (125Hz)
+        IE1 |= WDTIE;                       // Enable WDT interrupt
+        
+
+
+
+
+
+
 	P1DIR |= BIT6;// Set some pins to output direction
 
 	//Set up Pin 1.3 as a button input
@@ -87,8 +109,8 @@ void binit(void){
 	TA1CCTL1 = OUTMOD_7;
 	TA1CCTL2 = OUTMOD_7;
 
-	TACTL = TASSEL_2 + MC_1;           // SMCLK/8, upmode
-	TA1CTL = TASSEL_2 + MC_1;
+	TACTL = TASSEL_2 + MC_1 + ID_0;           // SMCLK, upmode
+	TA1CTL = TASSEL_2 + MC_1 + ID_0;
 
 	CCR0 = period;        // period timer 0
 	TA1CCR0 = period; //period timer 1
@@ -164,10 +186,12 @@ void set_lrgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //
 	_r = r_new;
 	_g = g_new;
 	_b = b_new;
-	CCR1 = r_new*16;
-	TA1CCR1 = g_new*16;
-	TA1CCR2 = b_new*16;
-
+	CCR1 = r_new*4;
+        r_ccr = CCR1;
+	TA1CCR1 = g_new*4;
+        g_ccr = TA1CCR1;
+	TA1CCR2 = b_new*4;
+        b_ccr = TA1CCR2;
 }
 
 void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //non-linear colorspace: instantly set output color
@@ -176,9 +200,12 @@ void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //n
 	_g = g_new;
 	_b = b_new;
 
-	CCR1 = (float)((float)r_new / 255)*((float)r_new / 255)*4095;
-	TA1CCR1 = (float)((float)g_new / 255)*((float)g_new / 255)*4095;
-	TA1CCR2 = (float)((float)b_new / 255)*((float)b_new / 255)*4095;
+	 r_ccr = (float)((float)r_new / 255)*((float)r_new / 255)*period;
+        CCR1 = r_ccr;
+	g_ccr = (float)((float)g_new / 255)*((float)g_new / 255)*period;
+        TA1CCR1 = g_ccr;
+	b_ccr = (float)((float)b_new / 255)*((float)b_new / 255)*period;
+        TA1CCR2 = b_ccr;
 
 }
 
@@ -189,14 +216,7 @@ int rval(void){
 	return _r;
 }
 
-//
-///*** ADC interrupt routine. Pulls CPU out of sleep mode for the main loop.**/
-//#pragma vector=ADC10_VECTOR
-//__interrupt void ADC10_ISR (void)
-//{
-//	ADCValue = ADC10MEM;				// Saves measured value.
-//	ADCDone = 1;  					// Sets flag for main loop.
-//}
+
 
 
 

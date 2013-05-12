@@ -36,7 +36,7 @@ Public Class Form1
     End Sub
     Private Sub set_rgb(ByVal red As Integer, ByVal green As Integer, ByVal blue As Integer)
         Dim output As String
-        output = ("set_rgb(" + Str(red) + "," + Str(green) + "," + Str(blue) + ");" + Chr(13) + Chr(10))
+        output = ("set_rgb(" + Str(red) + "," + Str(green) + "," + Str(blue) + ");")
         output = Replace(output, " ", "")
 
         send_output(output)
@@ -135,7 +135,7 @@ Public Class Form1
     Private Sub Button3_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button3.Click
         Dim temp As String
         Dim builder As String = ""
-        temp = ("set_rgb(" + Str(Me.NumericUpDown9.Value) + "," + Str(Me.NumericUpDown10.Value) + "," + Str(Me.NumericUpDown11.Value) + ");" + Chr(13) + Chr(10))
+        temp = ("set_rgb(" + Str(Me.NumericUpDown9.Value) + "," + Str(Me.NumericUpDown10.Value) + "," + Str(Me.NumericUpDown11.Value) + ");")
         queue.Add(temp)
         queue.Add("     " + Str(Me.NumericUpDown12.Value) + Chr(13) + Chr(10))
         For Each line In queue
