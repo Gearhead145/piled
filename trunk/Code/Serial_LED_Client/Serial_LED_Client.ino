@@ -1,5 +1,7 @@
 #include "test.h" //Include VITAL RGB TILE FUNCTIONS!
-unsigned char mode; //Global mode variable allows board to save/switch between different operating modes.
+#define mode_max 5//Define the maximum number of modes, so the pushbuttons will iterate through them all properly. Mode 0 is direct bluetooth command, and Mode 1 is the default start-up mode (rgb mixer). 
+unsigned char mode = 1; //Global mode variable allows board to save/switch between different operating modes.
+
 
 //Settings for strobe
 char freq = 1000;
@@ -10,6 +12,7 @@ char s_b = 255;
 
 //setting for sound activated colors
 char ccolor = 0;
+int avg = 1023; //variable for keeping a running average of the sound levels. Start at 1023 to prevent accidental triggering in a low volume situation
 
 //setting for clap activated white light
 boolean clapper = 0;
@@ -50,7 +53,10 @@ void _set_rgb(char command[128], char command_length, char base_length){
 
 
 void _target_rgb(char command[128], char command_length, char base_length){
-    //parse out the individual strings
+  
+  //!!! THIS IS A BLOCKING COMMAND!!!
+ 
+  //parse out the individual strings
   char temp_num[11]; //10 chars, plus a null character to terminate it as a string for atoi()
   char color = 3; //color here also includes the target time
   char pos;
@@ -94,7 +100,13 @@ void _target_rgb(char command[128], char command_length, char base_length){
 }
 
 void reboot(){
-  Serial.println("Rebooting...");
+  set_rgb(0,0,0);
+  freq = 1000;
+  duty = 1000;
+  s_r = 255;
+  s_g = 255;
+  s_b = 255;
+  avg = 1023;//reset the sound average.
   setup();
 }
 
@@ -112,11 +124,25 @@ void establishContact() {
   Serial.println("|   |    |   | |       ||   |___ |       |");
   Serial.println("|___|    |___| |_______||_______||______|");
   Serial.println("\nSerial command shell v1.2");
-  Serial.println("Copyright 2012 Jorel Lalicki");
+  Serial.println("Copyright 2012 LIB3 Inc.");
   Serial.println("__________________________________________\n\n");
   Serial.print('>');
 }
 
+
+void dec_mode(){
+  mode--;
+  if (mode == 0){
+    mode = mode_max; //if we cycle to the end, continue at other end
+  }
+}
+
+void inc_mode(){
+  mode++;
+  if (mode > mode_max){
+    mode = 1;
+  }  
+}
 
 
 void setup()
@@ -130,6 +156,23 @@ void setup()
 	P2DIR |= BIT4;             // P2.4 to output
 	P2SEL |= BIT4;             // P2.4 to TA1.2
  	//*************************
+ 
+        //Set up Pin 1.3 as a button input
+        P1DIR &= ~BIT3;
+        P1REN |= BIT3;
+        P1OUT |= BIT3;
+        P1IE |= BIT3; // P1.3 interrupt enabled
+        P1IFG &= ~BIT3; // P1.3 IFG cleared
+        
+        //Set up Pin 2.0 as a button input
+        P2DIR &= ~BIT0;
+        P2REN |= BIT0;
+        P2OUT |= BIT0;
+        P2IE |= BIT0; // P2.0 interrupt enabled
+        P2IFG &= ~BIT0; // P2.0 IFG cleared
+        
+        
+        digitalWrite(P2_0, HIGH);
         //Set up timer
 	CCTL1 = OUTMOD_7;// reset/set mode
 	CCTL2 = OUTMOD_7;
@@ -141,8 +184,12 @@ void setup()
 	TA1CCR0 = period; //period timer 1
 	CCR1 = 0;         // R
 	CCR2 = 0;         // G
-        mode = 1;
-        establishContact();  // send the fun initialization data OUT
+        mode = 1;          //Defaults to RGB mixer mode. 
+       attachInterrupt(P1_3, dec_mode, FALLING);
+       attachInterrupt(P2_0, inc_mode, FALLING);
+       establishContact();  // send the fun initialization data OUT
+        
+        
         
       
 }
@@ -162,8 +209,6 @@ int base_length = 0;
   {
     switch (mode){
           case 0:{ // Direct bluetooth command mode. Do nothing - just wait for commands
-            int gain = analogRead(F1)/16+1; //set the gain from the R potentiometer - range 1-63
-            Serial.println(gain);
             break;
           }
           case 1:
@@ -171,43 +216,38 @@ int base_length = 0;
             break;
           case 2: //the Clapper (named after Zach Clapper, creator of the first PILED Android app)
             {
-              int threshold = analogRead(F2); //set the threshold from the F1 potentiometer. This is the level against which the mic signal is compared to detect transients
+            int threshold = analogRead(F1); //set the threshold from the F1 potentiometer. This is the level against which the mic signal is compared to detect transients
             int temp = analogRead(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
       
       	    if (temp>threshold){ //if level is over threshold, it's a beat!
              //Clap on, clap off...
              if (clapper) {
-               target_rgb((char)0,(char)0,(char)0,(unsigned int)200.);
+               target_rgb((char)0,(char)0,(char)0,(unsigned int)200);
+               clapper = 0;
              }
              else{
                target_rgb((char)255,(char)255,(char)255,(unsigned int)200);
+               clapper = 1;
              }
             }
             break;
             }
           case 3:{
-            int gain = analogRead(F2)/16+1; //set the gain from the F2 potentiometer - range 1-64
-            int ambient = analogRead(F1); //Set the ambient level from the F1 potentiometer. This level is subtracted from the mic signal to give better dynamic range
-            int threshold = analogRead(F3);//set the threshold from the F3 potentiometer. This is the level against which the adjusted signal is compared for beat detection
+            int margin = analogRead(F1) / 16;//set the margin from the F1 potentiometer. This is the difference in the average level and a transient to trigger a beat.
             int temp = analogRead(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
-            temp -= ambient;
-            if (temp <0) temp = 0;
-	    temp*=gain; //multiply the level by gain to get closer to the full LED brightness range
-            Serial.println(gain);
-            Serial.println(threshold);
-            Serial.println(temp);
-            Serial.println("------------");
-      	    if (temp>threshold){ //if level is over threshold, it's a beat!
-               if (ccolor == 2){
-                 target_rgb((char)255,(char)0,(char)0,(unsigned int)10);
+            avg  = (avg + 3*temp)/4; //commence with super simple running exponential averaging!  
+      	    if (temp>(avg + margin)){ //if level is over average plus margin, it's a beat! (most of the time)   
+              //Cycle through the colors
+              if (ccolor == 2){
+                 target_rgb((char)255,(char)0,(char)0,(unsigned int)200);
                  ccolor++;
                }              
                else if (ccolor == 1){
-                 target_rgb((char)0,(char)255,(char)0,(unsigned int)10);
+                 target_rgb((char)0,(char)255,(char)0,(unsigned int)200);
                  ccolor++;
                }
                else{
-                  target_rgb((char)0,(char)0,(char)255,(unsigned int)10);
+                  target_rgb((char)0,(char)0,(char)255,(unsigned int)200);
                   ccolor = 1;
                }
             }
@@ -219,11 +259,13 @@ int base_length = 0;
   	  case 5:
            {
             //strobe - with variable frequency, duty cycle, and color
+            freq = analogRead(F1);
+            duty = analogRead(F2);
+            
 			for(i = 0; i < freq; ++i){
 				sleep(1000);//this is your frequency...
 		        }
                             set_rgb(s_r,s_g,s_b); //Set the colors ON as requested...
-                            Serial.println("strobin");
                         for(i = 0; i < duty; ++i){
 		  	        sleep(1000);//this is your duty cycle time...
 		  	}
@@ -235,7 +277,7 @@ int base_length = 0;
   }
   
   
-  
+   
   //check for serial stuff... Max length is 32 chars
   
     if (Serial.available() != 0){ //if there is a character in the serial buffer, check it!
@@ -255,9 +297,8 @@ int base_length = 0;
       }
       if (command_temp == ';'){
         //We have a new command (perhaps!)
-        //Now check which commands were requested! status, help, set_rgb, target_rgb, rcos, reboot, strobe
-    
-         //Serial.println(command); //debugging output
+        //Now check which commands were requested! set_rgb, target_rgb, rgbmix, reboot, strobe, clapper
+
     
           if (!memcmp("target_rgb",command,10)){
             mode = 0;
@@ -307,6 +348,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
+              
           }   
           else {
             invalid_input();

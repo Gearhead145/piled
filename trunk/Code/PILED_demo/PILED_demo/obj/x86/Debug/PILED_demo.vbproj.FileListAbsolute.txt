@@ -9,3 +9,12 @@ C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\ob
 C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.exe
 C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.xml
 C:\Users\THINKPAD\documents\visual studio 2010\Projects\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.pdb
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.exe
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.xml
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.pdb
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\bin\Debug\PILED_demo.exe
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\bin\Debug\PILED_demo.pdb
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\bin\Debug\PILED_demo.xml
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.Form1.resources
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.Resources.resources
+C:\Users\LITHIUM\Desktop\PILED\Code\PILED_demo\PILED_demo\obj\x86\Debug\PILED_demo.vbproj.GenerateResource.Cache
