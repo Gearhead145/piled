@@ -33,91 +33,69 @@ int b_ccr = 0;
 signed int mangler[] = {-317,167,-13,317,-167,13};
 char rand_index = 0; //index of current mangler value (changed every 8ms)
 
-int test(void);
-void binit(void);
-int stat(void);
-int rval(void);
+void setup_piled(void);
+
 
 void set_lrgb(unsigned char r_new, unsigned char g_new, unsigned char b_new);
 void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new);
 void target_rgb(unsigned char r, unsigned char g, unsigned char  b, unsigned long time);
-void sleed(int cycles);
+void sleep(int cycles);
 int Single_Measure(unsigned int chan);
 int _Single_Measure(unsigned int chan);
 
-
-
-int test(){
-	//do nothing!
-	return 123;
-}
-
-
-void sleep(int cycles){ //wastes cpu cycles in increments of 100 cycles, for software delays
-	while (cycles>0){
-		__delay_cycles(100);
-		cycles-=100;
-	}
-}
-
-
-void binit(void){
-	//set operating frequency to 16MHz
-	DCOCTL = CALDCO_16MHZ;
-	BCSCTL1 = CALBC1_16MHZ;
-
-	//sets up the timer and sets ports to outputs/inputs
-
-
-	//WDTCTL = WDTPW + WDTHOLD;             // Stop watchdog timer.
-
-
-        //Set up watchdog timer to introduce random noise to the CCR registers
-        WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTIS0; //Set up watchdog timer for an interrupt every 8ms (125Hz)
-        IE1 |= WDTIE;                       // Enable WDT interrupt
-        
-
-
-
-
-
-
-	P1DIR |= BIT6;// Set some pins to output direction
-
-	//Set up Pin 1.3 as a button input
-	P1DIR &= ~BIT3;
-	P1REN |= BIT3;
-	P1OUT |= BIT3;
-	P1IE |= BIT3; // P1.3 interrupt enabled
-	P1IFG &= ~BIT3; // P1.3 IFG cleared
-
-
-	//******************************************
-
-	P1DIR |= BIT6;             // P1.6 to output
-	P1SEL |= BIT6;             // P1.6 to TA0.1
+void setup_piled(){
+  
+   // start serial port at 9600 bps:
+        Serial.begin(9600);
+	P1DIR |= BIT6;             // P1.2 to output
+	P1SEL |= BIT6;             // P1.2 to TA0.1
 	P2DIR |= BIT1;             // P2.1 to output
-	 P2SEL |= BIT1;             // P2.1 to TA1.1
-	  P2DIR |= BIT4;             // P2.4 to output
-	 P2SEL |= BIT4;             // P2.4 to TA1.2
-
- 	  //*************************
-
- 	//Set up timer
-	CCTL1 = OUTMOD_7;                              // reset/set mode
+	P2SEL |= BIT1;             // P2.1 to TA1.1
+	P2DIR |= BIT4;             // P2.4 to output
+	P2SEL |= BIT4;             // P2.4 to TA1.2
+ 	//*************************
+ 
+        //Set up Pin 1.3 as a button input
+        P1DIR &= ~BIT3;
+        P1REN |= BIT3;
+        P1OUT |= BIT3;
+        P1IE |= BIT3; // P1.3 interrupt enabled
+        P1IFG &= ~BIT3; // P1.3 IFG cleared
+        
+        //Set up Pin 2.0 as a button input
+        P2DIR &= ~BIT0;
+        P2REN |= BIT0;
+        P2OUT |= BIT0;
+        P2IE |= BIT0; // P2.0 interrupt enabled
+        P2IFG &= ~BIT0; // P2.0 IFG cleared
+        
+        
+        digitalWrite(P2_0, HIGH);
+        //Set up timer
+	CCTL1 = OUTMOD_7;// reset/set mode
 	CCTL2 = OUTMOD_7;
 	TA1CCTL1 = OUTMOD_7;
 	TA1CCTL2 = OUTMOD_7;
-
-	TACTL = TASSEL_2 + MC_1 + ID_0;           // SMCLK, upmode
-	TA1CTL = TASSEL_2 + MC_1 + ID_0;
-
+	TACTL = TASSEL_2 + MC_1;           // SMCLK/8, upmode
+	TA1CTL = TASSEL_2 + MC_1;
 	CCR0 = period;        // period timer 0
 	TA1CCR0 = period; //period timer 1
 	CCR1 = 0;         // R
 	CCR2 = 0;         // G
-	_BIS_SR(GIE + TAIE); // Enable interrupts
+        
+       attachInterrupt(P1_3, dec_mode, FALLING);
+       attachInterrupt(P2_0, inc_mode, FALLING);
+       
+}
+
+void sleep(int cycles){ //wastes cpu cycles in increments of 1ms...for horribly innefficient software delays. Luckily, they do not interfere with timers, which is important...
+	while (cycles>0){
+		__delay_cycles(15999);
+		cycles--;
 	}
+}
+
+
 
 int _Single_Measure(unsigned int chan)
 {
@@ -137,10 +115,8 @@ int _Single_Measure(unsigned int chan)
 }
 
 int Single_Measure(unsigned int chan){
-	return _Single_Measure(chan);// + _Single_Measure(chan) + _Single_Measure(chan) + _Single_Measure(chan) - 2) / 4; //take 4 readings, add them up and subtract 2 to take a true average
+	return (_Single_Measure(chan) + _Single_Measure(chan) + _Single_Measure(chan) + _Single_Measure(chan) - 2) / 4; //take 4 readings, add them up and subtract 2 to take a true average
 }
-
-
 
 void target_rgb(unsigned char r, unsigned char g, unsigned char b, unsigned int time){
 
@@ -200,7 +176,7 @@ void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //n
 	_g = g_new;
 	_b = b_new;
 
-	 r_ccr = (float)((float)r_new / 255)*((float)r_new / 255)*period;
+	 r_ccr = (unsigned int)r_new *(unsigned int)r_new / 64;
         CCR1 = r_ccr;
 	g_ccr = (float)((float)g_new / 255)*((float)g_new / 255)*period;
         TA1CCR1 = g_ccr;
@@ -208,18 +184,6 @@ void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //n
         TA1CCR2 = b_ccr;
 
 }
-
-int stat(void){
-	return CCR1;
-}
-int rval(void){
-	return _r;
-}
-
-
-
-
-
 
 #endif /* LED_TILE_H_ */
 
