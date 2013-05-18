@@ -4,8 +4,6 @@ unsigned char mode = 1; //Global mode variable allows board to save/switch betwe
 
 
 //Settings for strobe
-char freq = 1000;
-char duty = 1000;
 char s_r = 255;
 char s_g = 255;
 char s_b = 255;
@@ -101,8 +99,6 @@ void _target_rgb(char command[128], char command_length, char base_length){
 
 void reboot(){
   set_rgb(0,0,0);
-  freq = 1000;
-  duty = 1000;
   s_r = 255;
   s_g = 255;
   s_b = 255;
@@ -130,6 +126,8 @@ void establishContact() {
 }
 
 
+
+//dec_mode and inc_mode serve as the ISR functions for the two pushbuttons
 void dec_mode(){
   mode--;
   if (mode == 0){
@@ -147,51 +145,9 @@ void inc_mode(){
 
 void setup()
 {
-        // start serial port at 9600 bps:
-        Serial.begin(9600);
-	P1DIR |= BIT6;             // P1.2 to output
-	P1SEL |= BIT6;             // P1.2 to TA0.1
-	P2DIR |= BIT1;             // P2.1 to output
-	P2SEL |= BIT1;             // P2.1 to TA1.1
-	P2DIR |= BIT4;             // P2.4 to output
-	P2SEL |= BIT4;             // P2.4 to TA1.2
- 	//*************************
- 
-        //Set up Pin 1.3 as a button input
-        P1DIR &= ~BIT3;
-        P1REN |= BIT3;
-        P1OUT |= BIT3;
-        P1IE |= BIT3; // P1.3 interrupt enabled
-        P1IFG &= ~BIT3; // P1.3 IFG cleared
-        
-        //Set up Pin 2.0 as a button input
-        P2DIR &= ~BIT0;
-        P2REN |= BIT0;
-        P2OUT |= BIT0;
-        P2IE |= BIT0; // P2.0 interrupt enabled
-        P2IFG &= ~BIT0; // P2.0 IFG cleared
-        
-        
-        digitalWrite(P2_0, HIGH);
-        //Set up timer
-	CCTL1 = OUTMOD_7;// reset/set mode
-	CCTL2 = OUTMOD_7;
-	TA1CCTL1 = OUTMOD_7;
-	TA1CCTL2 = OUTMOD_7;
-	TACTL = TASSEL_2 + MC_1;           // SMCLK/8, upmode
-	TA1CTL = TASSEL_2 + MC_1;
-	CCR0 = period;        // period timer 0
-	TA1CCR0 = period; //period timer 1
-	CCR1 = 0;         // R
-	CCR2 = 0;         // G
-        mode = 1;          //Defaults to RGB mixer mode. 
-       attachInterrupt(P1_3, dec_mode, FALLING);
-       attachInterrupt(P2_0, inc_mode, FALLING);
-       establishContact();  // send the fun initialization data OUT
-        
-        
-        
-      
+       setup_piled();
+       mode = 1;          //Defaults to RGB mixer mode. 
+       establishContact();  // send the fun initialization data OUT     
 }
 
 void loop()
@@ -235,42 +191,42 @@ int base_length = 0;
           case 3:{
             int margin = analogRead(F1) / 16;//set the margin from the F1 potentiometer. This is the difference in the average level and a transient to trigger a beat.
             int temp = analogRead(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
-            avg  = (avg + 3*temp)/4; //commence with super simple running exponential averaging!  
+            avg  = (temp + 3*avg)/4; //commence with super simple running exponential averaging!  
       	    if (temp>(avg + margin)){ //if level is over average plus margin, it's a beat! (most of the time)   
               //Cycle through the colors
               if (ccolor == 2){
-                 target_rgb((char)255,(char)0,(char)0,(unsigned int)200);
-                 ccolor++;
+                 target_rgb((char)255,(char)0,(char)0,(unsigned int)10);
+                 ccolor = 0;
                }              
                else if (ccolor == 1){
-                 target_rgb((char)0,(char)255,(char)0,(unsigned int)200);
-                 ccolor++;
+                 target_rgb((char)0,(char)255,(char)0,(unsigned int)10);
+                 ccolor= 2;
                }
                else{
-                  target_rgb((char)0,(char)0,(char)255,(unsigned int)200);
+                  target_rgb((char)0,(char)0,(char)255,(unsigned int)10);
                   ccolor = 1;
                }
             }
             break;
           }
           case 4: //Color temperature fader F1
-          
+          {
+            unsigned int ctemp = (analogRead(F1) / 8)-64;
+            unsigned int bright = analogRead(F2)/4;
+            set_rgb((bright*(191-ctemp))/256,(bright*(191))/256,(bright*(150+ctemp))/256);
             break;
+          }
   	  case 5:
            {
             //strobe - with variable frequency, duty cycle, and color
-            freq = analogRead(F1);
-            duty = analogRead(F2);
+            int ontime = analogRead(F1);
+            int offtime = analogRead(F2);
             
-			for(i = 0; i < freq; ++i){
-				sleep(1000);//this is your frequency...
-		        }
-                            set_rgb(s_r,s_g,s_b); //Set the colors ON as requested...
-                        for(i = 0; i < duty; ++i){
-		  	        sleep(1000);//this is your duty cycle time...
-		  	}
-		        set_rgb(0,0,0);
-                        break;
+	    sleep(offtime);//this is your off time...
+            set_rgb(s_r,s_g,s_b); //Set the colors ON as requested...
+	    sleep(ontime);//this is your on cycle time...
+	    set_rgb(0,0,0);
+            break;
            }
                 
     }
@@ -336,6 +292,22 @@ int base_length = 0;
           
           else if (!memcmp("sound",command,5)){
             mode = 3; //set the mode to sound activated
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("color_temp",command,10)){
+            mode = 4; //set the mode to manual color temperature control
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('>');
+          }
+          else if (!memcmp("strobe",command,6)){
+            mode = 5; //set the mode to STROBE MODE (manual settings)
               //Prepare the console for a new command!
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
