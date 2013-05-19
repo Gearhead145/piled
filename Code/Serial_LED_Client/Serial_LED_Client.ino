@@ -1,5 +1,5 @@
 #include "test.h" //Include VITAL RGB TILE FUNCTIONS!
-#define mode_max 5//Define the maximum number of modes, so the pushbuttons will iterate through them all properly. Mode 0 is direct bluetooth command, and Mode 1 is the default start-up mode (rgb mixer). 
+#define mode_max 6//Define the maximum number of modes, so the pushbuttons will iterate through them all properly. Mode 0 is direct bluetooth command, and Mode 1 is the default start-up mode (rgb mixer). 
 unsigned char mode = 1; //Global mode variable allows board to save/switch between different operating modes.
 
 
@@ -11,6 +11,12 @@ char s_b = 255;
 //setting for sound activated colors
 char ccolor = 0;
 int avg = 1023; //variable for keeping a running average of the sound levels. Start at 1023 to prevent accidental triggering in a low volume situation
+
+//setting for rainbow fade
+// global variables
+unsigned int rbow;     //0-360
+unsigned int relative; //0-59
+unsigned char rr, rg, rb;
 
 //setting for clap activated white light
 boolean clapper = 0;
@@ -228,7 +234,47 @@ int base_length = 0;
 	    set_rgb(0,0,0);
             break;
            }
-                
+          case 6:
+          {
+            sleep(analogRead(F1)/64);
+            rbow++;
+            rbow %= 360;
+            char category = rbow / 60;
+            int relative = rbow % 60;
+            switch(category){
+              case 0:
+                rr = 255;
+                 rb = 0;
+                 rg = relative * 17 / 4;
+                           break;
+              case 1:
+                  rg = 255;
+                  rb = 0;
+                  rr = 255 - relative * 17 / 4;
+                  break;
+              case 2:
+                  rg = 255;
+                  rr = 0;
+                  rb = relative * 17 / 4;
+                  break;
+              case 3:
+                  rb = 255;
+                  rr = 0;
+                  rg = 255 - relative * 17 / 4;
+                  break;
+              case 4:
+                  rb = 255;
+                  rg = 0;
+                  rr = relative * 17 / 4;
+                  break;
+              case 5:
+                  rr = 255;
+                  rg = 0;
+                  rb = 255 - relative * 17 / 4;
+                  break;
+              }
+              set_rgb(rr,rg,rb);
+          }     
     }
   }
   
