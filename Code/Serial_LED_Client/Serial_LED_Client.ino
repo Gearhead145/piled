@@ -309,7 +309,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           else if (!memcmp("set_rgb",command,7)){
             mode = 0;
@@ -318,14 +318,14 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           else if (!memcmp("rgbmix",command,6)){
             mode = 1; //set the mode to manual RGB faders
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           else if (!memcmp("clapper",command,7)){
             mode = 2; //set the mode to clap activated
@@ -333,7 +333,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           
           else if (!memcmp("sound",command,5)){
@@ -342,7 +342,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           else if (!memcmp("color_temp",command,10)){
             mode = 4; //set the mode to manual color temperature control
@@ -350,7 +350,15 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
+          }
+          else if (!memcmp("rainbow",command,7)){
+            mode = 4; //set the mode to demo rainbow mode
+              //Prepare the console for a new command!
+              command_length = 0; //length of command (ending with a ;)
+              command_temp = 0;
+              base_length = 0;
+              Serial.write('\n>');
           }
           else if (!memcmp("strobe",command,6)){
             mode = 5; //set the mode to STROBE MODE (manual settings)
@@ -358,7 +366,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }
           else if (!memcmp("reboot",command,6)){
               reboot();
@@ -374,7 +382,7 @@ int base_length = 0;
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
               base_length = 0;
-              Serial.write('>');
+              Serial.write('\n>');
           }                  
       }    
     }  
