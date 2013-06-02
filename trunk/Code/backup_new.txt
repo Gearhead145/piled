@@ -1,0 +1,246 @@
+#include "test.h" //Include VITAL RGB TILE FUNCTIONS!
+unsigned char mode; //Global mode variable allows board to save/switch between different operating modes.
+
+//Settings for strobe
+char freq = 1000;
+char duty = 1000;
+char s_r = 255;
+char s_g = 255;
+char s_b = 255;
+char ccolor = 0;
+
+
+void status(){
+  Serial.println("Status:");
+}
+void help(){
+  Serial.println("Serial command shell v1.2");
+  Serial.println("Copyright (c) 2012 LIB3 Inc.");
+}
+
+
+
+void reboot(){
+  setup();
+}
+ void invalid_input(){
+   Serial.println("Error in input command. Type ""help();"" for available commands."); 
+ }
+
+
+
+
+void setup()
+{
+        // start serial port at 9600 bps:
+        Serial.begin(9600);
+	P1DIR |= BIT6;             // P1.2 to output
+	P1SEL |= BIT6;             // P1.2 to TA0.1
+	P2DIR |= BIT1;             // P2.1 to output
+	P2SEL |= BIT1;             // P2.1 to TA1.1
+	P2DIR |= BIT4;             // P2.4 to output
+	P2SEL |= BIT4;             // P2.4 to TA1.2
+ 	//*************************
+        //Set up timer
+	CCTL1 = OUTMOD_7;// reset/set mode
+	CCTL2 = OUTMOD_7;
+	TA1CCTL1 = OUTMOD_7;
+	TA1CCTL2 = OUTMOD_7;
+	TACTL = TASSEL_2 + MC_1;           // SMCLK/8, upmode
+	TA1CTL = TASSEL_2 + MC_1;
+	CCR0 = period;        // period timer 0
+	TA1CCR0 = period; //period timer 1
+	CCR1 = 0;         // R
+	CCR2 = 0;         // G
+        mode = 0;
+        establishContact();  // send the fun initialization data OUT; and wait for a keypress
+        
+      
+}
+
+void sound(){
+  mode = 3; //set the mode to sound activated mode!
+}
+
+
+
+void effects_loop(){
+  
+  int i;
+  while (Serial.available() == 0) //Loop until some serial data is recieved.
+ // Serial.println("effective!");
+  {
+    switch (mode){
+          case 0: // Direct bluetooth command mode. Do nothing - just wait for commands
+          {
+            //Serial.println("zero");
+            break;
+          }
+          case 2:
+          {
+            set_rgb(255,0,0);
+            break;
+          }
+          case 3:{
+            Serial.println("Sound Activated mode:");
+            int gain = Single_Measure(F2)/16; //set the gain from the G potentiometer - range 0-63
+            int threshold = Single_Measure(F1);//set the threshold from the R potentiometer
+            int temp = Single_Measure(MIC);//value from 0-1023 indicating sound level. Room noise is around 100-150 with the air conditioner on... :D
+  	    temp -= threshold; //get rid of the ambient level
+  	    if (temp <0)temp=0; //if negative, make zero (leds cant show negative light)
+  	      temp*=gain; //multiply the level by 10 to get closer to the full LED brightness range
+            
+            if (temp > threshold){
+              ccolor++;
+              
+              if (ccolor == 0){
+                set_rgb(255,0,0);
+              }
+              else if (ccolor == 1){
+                set_rgb(0,255,0);
+              }
+              else if (ccolor == 2){
+                set_rgb(0,0,255);
+              }
+              else {
+                ccolor == 0;
+                set_rgb(255,0,0);
+              }
+            }
+            break;
+          }
+  	  case 4://strobe - with variable frequency, duty cycle, and color
+  	{
+			for(i = 0; i < freq; ++i){
+				sleep(1000);//this is your frequency...
+		        }
+                            set_rgb(s_r,s_g,s_b); //Set the colors ON as requested...
+                            Serial.println("strobin");
+                        for(i = 0; i < duty; ++i){
+		  	        sleep(1000);//this is your duty cycle time...
+		  	}
+		        set_rgb(0,0,0);
+                        break;
+		 
+        }
+    }
+  }
+}
+
+void strobe(char command[128], char command_length, char base_length){
+ // Serial.println(command_length);
+    //parse out the individual strings
+  char temp_num[7]; //6 chars, plus a null character to terminate it as a string for atoi()
+  char color = 4; //starts reading at the 4th argument
+  char pos;
+  char temp = command_length - 3; //we want an index of the leftmost data value (not ")" or ";" )
+  while ( temp > base_length){
+     temp_num[0] = '0';//clear the buffer for a single color
+     temp_num[1] = '0';
+     temp_num[2] = '0';
+     temp_num[3] = '0';
+     temp_num[4] = '0';
+     temp_num[5] = '0';
+     temp_num[6] = 0; //null character termination
+     pos = 5;
+    while (command[temp] != ',' && command[temp] != '('){ //parse out separate colors
+        temp_num[pos] = command[temp]; //data? I hope so!
+        temp--;
+        pos--;
+        if (pos<-1) { //You forgot a comma, or put WAY too many digits...
+           invalid_input();
+           return;
+        }
+    }
+    temp--;
+
+    //the temp_num array should now contain a 3 digit padded null terminated ascii representation of a number
+    if (color == 4) s_b = atoi(temp_num);
+    if (color == 3) s_g = atoi(temp_num);
+    if (color == 2) s_r = atoi(temp_num);
+    if (color == 1) duty = atoi(temp_num);
+    if (color == 0) freq = atoi(temp_num);
+    color--; //now read in the next color   
+  }
+  mode = 4; //set the mode to STROBE MODE
+ // Serial.println("strobe data set");  
+}
+
+
+
+
+void loop()
+{
+    Serial.write('>');
+    effects_loop(); //Go to the effects/mode loop, and stay there until new serial data is recieved.
+    char command[128]; //command buffer
+    int command_length = 0; //length of command (ending with a ;)
+    char command_temp = 0;
+    int base_length = 0;
+    
+    while (command_temp != ';'){
+      while (Serial.available() < 1){} //Wait for a full 4 bytes of command instruction
+      command_temp = Serial.read();
+      if (command_temp == ' ' || command_temp <= 31  ){
+          //character is spacing/formatting, and should be ignored. Do nothing.
+      }
+      else { //character is valid, and should be treated as such...
+      
+        command[command_length] = command_temp;
+          ++command_length; //update the recorded length of the command so far
+        if (command_temp == '('){
+          //This is the end of the base command, and the start of arguments
+          base_length = command_length - 1;
+        }
+      }
+    }
+
+  //read in two more lines, just for the lulz. Also, so that the strobe works (or else the LF/CR would trigger a "new command".
+  while (Serial.available() < 2){}
+  if (Serial.read() != '\r' &&  Serial.read() != '\n') Serial.println("Please use CR+LF terminated lines");
+  //Now check which commands were requested! status, help, set_rgb, target_rgb, rcos, reboot, strobe
+    
+   //Serial.println(command); //debugging output
+    
+   if (!memcmp("status",command,6)){
+        status();
+    }
+   else if (!memcmp("help",command,4)){
+       help();
+    }
+    else if (!memcmp("target_rgb",command,10)){
+      mode = 0;
+       _target_rgb(command, command_length, base_length);
+    }
+   else if (!memcmp("sound",command,5)){
+     sound();
+    }  
+    else if (!memcmp("set_rgb",command,7)){
+      mode = 0;
+      _set_rgb(command, command_length, base_length);
+    }
+    else if (!memcmp("reboot",command,6)){
+        reboot();
+    }   
+    else if (!memcmp("strobe",command,6)){
+        strobe(command, command_length, base_length);
+    }
+    else {
+      invalid_input();
+    }
+}
+
+
+void establishContact() {
+  Serial.println(" _______  ___   ___      _______  ______"); 
+  Serial.println("|       ||   | |   |    |       ||      |");
+  Serial.println("|    _  ||   | |   |    |    ___||  _    |");
+  Serial.println("|   |_| ||   | |   |    |   |___ | | |   |");
+  Serial.println("|    ___||   | |   |___ |    ___|| |_|   |");
+  Serial.println("|   |    |   | |       ||   |___ |       |");
+  Serial.println("|___|    |___| |_______||_______||______|");
+  Serial.println("\nSerial command shell v1.2");
+  Serial.println("Copyright 2012 Jorel Lalicki");
+  Serial.println("__________________________________________\n\n");
+}
+
