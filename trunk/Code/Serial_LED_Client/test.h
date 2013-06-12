@@ -118,7 +118,7 @@ int Single_Measure(unsigned int chan){
 	return (_Single_Measure(chan) + _Single_Measure(chan) + _Single_Measure(chan) + _Single_Measure(chan) - 2) / 4; //take 4 readings, add them up and subtract 2 to take a true average
 }
 
-void target_rgb(unsigned char r, unsigned char g, unsigned char b, unsigned int time){
+void target_rgb(unsigned char r, unsigned char b, unsigned char g, unsigned int time){
 
 
 	unsigned long interval = time;
@@ -146,18 +146,18 @@ void target_rgb(unsigned char r, unsigned char g, unsigned char b, unsigned int 
 			r_temp -= r_change;
 			g_temp -= g_change;
 			b_temp -= b_change;
-			set_rgb(r_temp,g_temp,b_temp); //set the output to this intermediate color
+			set_rgb(r_temp,b_temp,g_temp); //set the output to this intermediate color
 	}
 	//if all else failed, make sure the end result is right on target..., and update the internal linear values
 	_r = r;
 	_g = g;
 	_b = b;
-	set_rgb(r,g,b);
+	set_rgb(r,b,g);
 }
 
 
 
-void set_lrgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //linear RGB color space - not recommended for use!
+void set_lrgb(unsigned char r_new, unsigned char b_new, unsigned char g_new){ //linear RGB color space - not recommended for use!
 	//update internal linear values
 	_r = r_new;
 	_g = g_new;
@@ -170,7 +170,7 @@ void set_lrgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //
         b_ccr = TA1CCR2;
 }
 
-void set_rgb(unsigned char r_new, unsigned char g_new, unsigned char b_new){ //non-linear colorspace: instantly set output color
+void set_rgb(unsigned char r_new, unsigned char b_new, unsigned char g_new){ //non-linear colorspace: instantly set output color
 	//update internal linear values
 	_r = r_new;
 	_g = g_new;

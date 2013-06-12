@@ -274,6 +274,7 @@ int base_length = 0;
                   break;
               }
               set_rgb(rr,rg,rb);
+			  break;
           }     
     }
   }
@@ -353,7 +354,7 @@ int base_length = 0;
               Serial.write('\n>');
           }
           else if (!memcmp("rainbow",command,7)){
-            mode = 4; //set the mode to demo rainbow mode
+            mode = 6; //set the mode to demo rainbow mode
               //Prepare the console for a new command!
               command_length = 0; //length of command (ending with a ;)
               command_temp = 0;
