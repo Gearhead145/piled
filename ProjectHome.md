@@ -1,0 +1,3 @@
+This is the working repository for the PILED development board. Feel free to take a look and play around with the files here - however, things may be poorly documented, unfinished, or just not work. Once this code is at a level suitable for release, it will be available for download directly from the LIB3 website.
+
+The PILED Development System is an MSP430 based development board with integrated MOSFET  high current LED drivers, bluetooth communication, linear potentiometers, buttons, and a microphone.
